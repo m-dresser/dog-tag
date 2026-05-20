@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # DogTag workshop bootstrap. Run on a fresh Amazon Linux 2023 EC2 instance
-# (e.g. via SSM Session Manager) to install git, install pip, and clone
-# the repo into $HOME/dog-tag.
+# (e.g. via SSM Session Manager) to install git + pip, clone the repo
+# into $HOME/dog-tag, and install the Python dependencies.
 #
 # Bootstrap from zero (the script lives inside the repo, so participants
 # fetch it directly from GitHub the first time):
@@ -25,8 +25,10 @@ else
   git clone "$REPO_URL" "$REPO_DIR"
 fi
 
+echo "==> Installing Python dependencies"
+pip3 install -r "$REPO_DIR/requirements.txt"
+
 echo
 echo "Done. Next steps:"
 echo "  cd $REPO_DIR"
-echo "  pip install -r requirements.txt"
 echo "  python3 app.py"
