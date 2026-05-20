@@ -302,6 +302,21 @@ function fmtTime(iso) {
   } catch (e) { return iso; }
 }
 
+function hashString(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  return Math.abs(h);
+}
+
+function colorForSource(source) {
+  if (!source) return null;
+  const hue = hashString(source) % 360;
+  return `hsl(${hue}, 70%, 65%)`;
+}
+
 function renderPost(post) {
   const time = fmtTime(post.timestamp);
   const author = (post.author || '').slice(0, 24);
@@ -323,6 +338,16 @@ function renderPost(post) {
   const foot = document.createElement('div');
   foot.className = 'post-footer';
   foot.textContent = bottomLine;
+
+  const color = colorForSource(post.source_instance);
+  if (color) {
+    head.style.color = color;
+    foot.style.color = color;
+    body.style.borderLeftColor = color;
+    body.style.borderRightColor = color;
+    wrap.title = 'from ' + post.source_instance;
+  }
+
   wrap.appendChild(head);
   wrap.appendChild(body);
   wrap.appendChild(foot);
@@ -377,7 +402,7 @@ function renderMyWallPanel() {
       const r = await fetch('/api/wall', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author, body }),
+        body: JSON.stringify({ author, body, source_instance: window.location.origin }),
       });
       if (r.ok) {
         form.querySelector('[name=body]').value = '';
@@ -576,7 +601,7 @@ function renderFriendWallPanel(friend) {
       const r = await fetch(friend.url + '/api/wall', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author, body }),
+        body: JSON.stringify({ author, body, source_instance: window.location.origin }),
       });
       if (r.ok) {
         form.querySelector('[name=body]').value = '';

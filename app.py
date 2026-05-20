@@ -167,6 +167,7 @@ def post_wall():
     data = request.get_json(silent=True) or {}
     author = (data.get("author") or "").strip() if isinstance(data.get("author"), str) else ""
     body = (data.get("body") or "").strip() if isinstance(data.get("body"), str) else ""
+    source_instance = normalize_url(data.get("source_instance")) or None
     if not author or not body:
         log.warning(
             "validation failed",
@@ -179,10 +180,18 @@ def post_wall():
         "author": author,
         "body": body,
         "timestamp": now_iso(),
+        "source_instance": source_instance,
     }
     with state_lock:
         state["wall"].append(post)
-    log.info("post received", extra={"author": author, "body_length": len(body)})
+    log.info(
+        "post received",
+        extra={
+            "author": author,
+            "body_length": len(body),
+            "source_instance": source_instance,
+        },
+    )
     return jsonify(post), 201
 
 
