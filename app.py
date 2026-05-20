@@ -230,33 +230,18 @@ def remove_friend(encoded_url):
     return jsonify({"error": "friend not found"}), 404
 
 
-def _format_public_url(host, public_port):
-    if public_port == 80:
-        return f"http://{host}"
-    return f"http://{host}:{public_port}"
-
-
-def _print_startup_banner(bind_port, public_port):
+def _print_startup_banner(port):
     time.sleep(0.4)
     ip = fetch_public_ip()
-    host = ip if ip else "localhost"
-    public_url = _format_public_url(host, public_port)
+    public_url = f"http://{ip}:{port}" if ip else f"http://localhost:{port}"
     print(f"\n🏷️  DogTag is running! Open your wall at: {public_url}\n", flush=True)
     log.info(
         "startup",
-        extra={
-            "owner": state["owner"],
-            "port": bind_port,
-            "public_port": public_port,
-            "public_url": public_url,
-        },
+        extra={"owner": state["owner"], "port": port, "public_url": public_url},
     )
 
 
 if __name__ == "__main__":
-    bind_port = int(os.environ.get("PORT", 1337))
-    public_port = int(os.environ.get("PUBLIC_PORT", bind_port))
-    threading.Thread(
-        target=_print_startup_banner, args=(bind_port, public_port), daemon=True
-    ).start()
-    app.run(host="0.0.0.0", port=bind_port, debug=False, use_reloader=False)
+    port = int(os.environ.get("PORT", 1337))
+    threading.Thread(target=_print_startup_banner, args=(port,), daemon=True).start()
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
